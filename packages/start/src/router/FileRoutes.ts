@@ -7,11 +7,13 @@ import { pageRoutes as routeConfigs } from "./routes";
 
 export function createRoutes() {
   function createRoute(route: Route) {
+    const mod = route.$$route ? route.$$route.require() : undefined;
     return {
       ...route,
-      ...(route.$$route ? route.$$route.require().route : undefined),
+      ...(mod ? mod.route : undefined),
+      ...(mod && typeof mod.ssr !== "undefined" ? { ssr: mod.ssr } : undefined),
       info: {
-        ...(route.$$route ? route.$$route.require().route.info : {}),
+        ...(mod && mod.route && mod.route.info ? mod.route.info : {}),
         filesystem: true
       },
       component:

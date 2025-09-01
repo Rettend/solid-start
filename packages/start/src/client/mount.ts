@@ -5,6 +5,7 @@ import {
   getHydrationKey,
   getOwner,
   hydrate,
+  render,
   type MountableElement
 } from "solid-js/web";
 
@@ -110,5 +111,8 @@ export function mount(fn: () => JSX.Element, el: MountableElement) {
 
     return;
   }
-  return hydrate(fn, el);
+  if ((el as HTMLElement).hasChildNodes()) {
+    return hydrate(fn, el);
+  }
+  return render(fn, el);
 }

@@ -1,3 +1,4 @@
+import { createRouter } from "radix3";
 import { getCookie, setCookie } from "vinxi/http";
 import { createRoutes } from "../router/FileRoutes";
 import { FetchEvent, PageEvent } from "./types";
@@ -30,6 +31,29 @@ export async function createPageEvent(ctx: FetchEvent) {
   ctx.response.headers.set("Content-Type", "text/html");
   // const prevPath = ctx.request.headers.get("x-solid-referrer");
   // const mutation = ctx.request.headers.get("x-solid-mutation") === "true";
+  const routes = createRoutes();
+
+  let ssr: boolean | undefined = undefined;
+  try {
+    const router = createRouter({
+      routes: routes.reduce((memo: Record<string, { route: any }>, r: any) => {
+        const path = r.path
+          .replace(/\([^)/]+\)/g, "")
+          .replace(/\/+/g, "/")
+          .replace(/\*([^\/]*)/g, (_: string, m: string) => `**:${m}`);
+        memo[path] = { route: r };
+        return memo;
+      }, {})
+    });
+    const pathname = new URL(ctx.request.url).pathname;
+    const match = router.lookup(pathname);
+    if (match && match.route) {
+      ssr = match.route.ssr;
+    }
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn(e);
+  }
+
   const pageEvent: PageEvent = Object.assign(ctx, {
     manifest: await clientManifest.json(),
     assets: [
@@ -46,7 +70,8 @@ export async function createPageEvent(ctx: FetchEvent) {
     router: {
       submission: initFromFlash(ctx) as any
     },
-    routes: createRoutes(),
+    routes,
+    ssr,
     // prevUrl: prevPath || "",
     // mutation: mutation,
     // $type: FETCH_EVENT,

@@ -40,6 +40,8 @@ export function StartServer(props: { document: Component<DocumentComponentProps>
   // @ts-ignore
   const nonce = context.nonce;
 
+  const enableSSR = import.meta.env.START_SSR && context.ssr !== false;
+
   let assets: Asset[] = [];
   Promise.resolve().then(async () => {
     let assetPromises: Promise<Asset[]>[] = [];
@@ -79,7 +81,7 @@ export function StartServer(props: { document: Component<DocumentComponentProps>
         <props.document
           assets={
             <>
-              <HydrationScript />
+              {enableSSR && <HydrationScript />}
               {context.assets.map((m: any) => renderAsset(m, nonce))}
             </>
           }
@@ -117,16 +119,18 @@ export function StartServer(props: { document: Component<DocumentComponentProps>
             )
           }
         >
-          {!import.meta.env.START_ISLANDS ? (
-            <Hydration>
+          {enableSSR && (
+            !import.meta.env.START_ISLANDS ? (
+              <Hydration>
+                <ErrorBoundary>
+                  <App />
+                </ErrorBoundary>
+              </Hydration>
+            ) : (
               <ErrorBoundary>
                 <App />
               </ErrorBoundary>
-            </Hydration>
-          ) : (
-            <ErrorBoundary>
-              <App />
-            </ErrorBoundary>
+            )
           )}
         </props.document>
       </TopErrorBoundary>

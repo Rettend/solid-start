@@ -55,6 +55,7 @@ export interface PageEvent extends RequestEvent {
   manifest: any;
   assets: any;
   routes: any[];
+  ssr?: boolean;
   // prevUrl: string | null;
   // $type: typeof FETCH_EVENT;
   $islands: Set<string>;

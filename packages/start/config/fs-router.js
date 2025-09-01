@@ -38,6 +38,7 @@ export class SolidStartClientFileRouter extends BaseFileSystemRouter {
     const [_, exports] = analyzeModule(src);
     const hasDefault = !!exports.find(e => e.n === "default");
     const hasRouteConfig = !!exports.find(e => e.n === "route");
+    const hasSSR = !!exports.find(e => e.n === "ssr");
     if (hasDefault) {
       return {
         page: true,
@@ -45,12 +46,16 @@ export class SolidStartClientFileRouter extends BaseFileSystemRouter {
           src: src,
           pick: ["default", "$css"]
         },
-        $$route: hasRouteConfig
-          ? {
-              src: src,
-              pick: ["route"]
-            }
-          : undefined,
+        $$route:
+          hasRouteConfig || hasSSR
+            ? {
+                src: src,
+                pick: [
+                  ...(hasRouteConfig ? ["route"] : []),
+                  ...(hasSSR ? ["ssr"] : [])
+                ]
+              }
+            : undefined,
         path,
         filePath: src
       };
@@ -115,6 +120,7 @@ export class SolidStartServerFileRouter extends BaseFileSystemRouter {
 
     const [_, exports] = analyzeModule(src);
     const hasRouteConfig = exports.find(e => e.n === "route");
+    const hasSSR = !!exports.find(e => e.n === "ssr");
     const hasDefault = !!exports.find(e => e.n === "default");
     const hasAPIRoutes = !!exports.find(exp => HTTP_METHODS.includes(exp.n));
     if (hasDefault || hasAPIRoutes) {
@@ -127,12 +133,16 @@ export class SolidStartServerFileRouter extends BaseFileSystemRouter {
                 pick: ["default", "$css"]
               }
             : undefined,
-        $$route: hasRouteConfig
-          ? {
-              src: src,
-              pick: ["route"]
-            }
-          : undefined,
+        $$route:
+          hasRouteConfig || hasSSR
+            ? {
+                src: src,
+                pick: [
+                  ...(hasRouteConfig ? ["route"] : []),
+                  ...(hasSSR ? ["ssr"] : [])
+                ]
+              }
+            : undefined,
         ...createHTTPHandlers(src, exports),
         path,
         filePath: src
