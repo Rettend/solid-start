@@ -1,10 +1,10 @@
-import { join } from 'node:path';
+import { posix } from 'node:path';
 import { createEffect, createSignal } from "solid-js";
 
 function serverFnWithNodeBuiltin() {
   "use server";
 
-  return join('can','externalize');
+  return posix.join('can','externalize');
 }
 
 export default function App() {

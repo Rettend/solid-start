@@ -1,7 +1,8 @@
 describe("hydration", () => {
     it("should have interactivity", () => {
         cy.visit("/");
-        cy.get("#counter-button").trigger("click")
+        cy.wait(10);
+        cy.get("#counter-button").trigger("click");
         cy.get("#counter-output").contains("1");
     });
 
